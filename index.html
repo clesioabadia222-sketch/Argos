@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071a35">
+  <meta name="description" content="ARGOS - assistente de conhecimentos criado por Clésio Abadia Souza.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <title>ARGOS</title>
+  <style>
+    :root{color-scheme:dark;--bg:#061326;--panel:#0d2342;--panel2:#122d50;--blue:#168cff;--cyan:#39d8ff;--text:#eef6ff;--muted:#9bb4d1}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#123766 0,#061326 48%);font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text);min-height:100vh}
+    .app{max-width:850px;margin:auto;min-height:100vh;display:flex;flex-direction:column;padding:14px}
+    header{display:flex;align-items:center;gap:13px;padding:14px 8px 18px;border-bottom:1px solid #244364}
+    .logo{width:54px;height:54px;border-radius:17px;background:linear-gradient(145deg,#0c8cff,#082a58);display:grid;place-items:center;font-size:28px;box-shadow:0 0 25px #087bdb66}
+    h1{margin:0;font-size:25px;letter-spacing:2px}header p{margin:3px 0 0;color:var(--muted);font-size:12px}
+    .status{margin-left:auto;color:#79e6b0;font-size:12px;white-space:nowrap}
+    .intro{padding:16px 4px 10px}.intro strong{font-size:16px}.intro p{margin:5px 0;color:var(--muted);font-size:13px}
+    .shortcuts{display:flex;gap:8px;overflow-x:auto;padding:7px 0 13px}
+    button{border:1px solid #28608d;background:#102b4d;color:var(--text);border-radius:12px;padding:10px 13px;font-weight:600;cursor:pointer}
+    button:active{transform:scale(.98)}.shortcuts button{white-space:nowrap;font-size:12px}
+    #chat{flex:1;min-height:270px;max-height:58vh;overflow:auto;padding:10px 2px 18px;display:flex;flex-direction:column;gap:12px}
+    .msg{max-width:88%;padding:12px 14px;border-radius:16px;line-height:1.48;white-space:pre-wrap;overflow-wrap:anywhere}
+    .bot{align-self:flex-start;background:var(--panel2);border:1px solid #244d76;border-bottom-left-radius:4px}
+    .user{align-self:flex-end;background:#075ba9;border:1px solid #2589df;border-bottom-right-radius:4px}
+    .who{font-size:10px;color:#9fdcff;font-weight:700;letter-spacing:.7px;margin-bottom:4px}
+    .composer{position:sticky;bottom:0;background:#061326;padding:10px 0 max(10px,env(safe-area-inset-bottom));border-top:1px solid #244364}
+    .inputrow{display:flex;gap:8px}.inputrow input{min-width:0;flex:1;border:1px solid #315a80;border-radius:14px;padding:14px;background:#0b203b;color:white;font-size:16px;outline:none}
+    .send{background:linear-gradient(135deg,#168cff,#0759b6);border:0;min-width:58px;font-size:18px}
+    .tools{display:flex;justify-content:space-between;gap:8px;margin-top:9px}.tools button{font-size:11px;padding:8px 10px}
+    .hint{font-size:11px;color:var(--muted);text-align:center;margin:9px 0 0}
+    dialog{background:#0d2342;color:var(--text);border:1px solid #315a80;border-radius:18px;width:min(92vw,520px);padding:20px}
+    dialog::backdrop{background:#000a}dialog h2{margin-top:0}dialog input,dialog textarea{width:100%;margin:6px 0 12px;padding:11px;border-radius:10px;border:1px solid #315a80;background:#071a35;color:white;font:inherit}
+    dialog textarea{min-height:100px} .dialogactions{display:flex;justify-content:flex-end;gap:8px}
+    footer{text-align:center;color:#7792b2;font-size:10px;padding:10px}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">◈</div>
+    <div><h1>ARGOS</h1><p>Sua biblioteca inteligente de conhecimentos</p></div>
+    <div class="status">● LOCAL</div>
+  </header>
+  <section class="intro">
+    <strong>Olá! Eu sou o ARGOS.</strong>
+    <p>Criado por Clésio Abadia Souza. Posso conversar, explicar assuntos e ajudar nos estudos com minha biblioteca programada.</p>
+  </section>
+  <nav class="shortcuts">
+    <button data-prompt="Quero estudar inglês do nível iniciante.">🇬🇧 Aprender inglês</button>
+    <button data-prompt="Explique matemática básica.">∑ Matemática</button>
+    <button data-prompt="Mostre os assuntos de conhecimentos gerais que você conhece.">📚 Conhecimentos</button>
+    <button data-prompt="Como posso ensinar novos conhecimentos a você?">＋ Ensinar</button>
+  </nav>
+  <main id="chat" aria-live="polite"></main>
+  <section class="composer">
+    <div class="inputrow">
+      <input id="question" autocomplete="off" placeholder="Digite sua pergunta..." aria-label="Sua pergunta">
+      <button class="send" id="send" aria-label="Enviar">➤</button>
+    </div>
+    <div class="tools">
+      <button id="history">Histórico</button>
+      <button id="teach">Adicionar conhecimento</button>
+      <button id="clear">Nova conversa</button>
+    </div>
+    <p class="hint">Sem API e sem assinatura. As respostas vêm da biblioteca local do ARGOS.</p>
+  </section>
+  <footer>ARGOS · Criado por Clésio Abadia Souza</footer>
+</div>
+
+<dialog id="teachDialog">
+  <h2>Ensinar ao ARGOS</h2>
+  <label>Pergunta ou assunto</label>
+  <input id="teachKey" placeholder="Ex.: O que é astronomia?">
+  <label>Resposta que o ARGOS deverá guardar</label>
+  <textarea id="teachValue" placeholder="Escreva uma explicação..."></textarea>
+  <div class="dialogactions"><button id="cancelTeach">Cancelar</button><button id="saveTeach">Guardar</button></div>
+</dialog>
+
+<script>
+const $ = s => document.querySelector(s);
+const chatEl = $("#chat");
+const norm = s => s.toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
+const defaultKnowledge = {
+ "fotossintese":"Fotossíntese é o processo pelo qual plantas, algas e algumas bactérias convertem energia luminosa em energia química. Nas plantas, são utilizados água e dióxido de carbono para produzir açúcares, com liberação de oxigênio.",
+ "celula":"A célula é a unidade estrutural e funcional básica dos seres vivos. Existem organismos unicelulares e pluricelulares.",
+ "dna":"DNA é a molécula que armazena as instruções genéticas usadas no desenvolvimento e funcionamento dos seres vivos.",
+ "gravidade":"Gravidade é a interação pela qual corpos com massa se atraem. Na superfície da Terra, ela nos mantém junto ao chão e dá peso aos objetos.",
+ "atomo":"Um átomo tem um núcleo com prótons e nêutrons, rodeado por elétrons. O número de prótons define o elemento químico.",
+ "agua":"Água é uma substância cuja molécula é H₂O: dois átomos de hidrogênio e um de oxigênio.",
+ "sistema solar":"O Sistema Solar é formado pelo Sol e pelos corpos que orbitam ao seu redor, incluindo oito planetas, luas, asteroides e cometas.",
+ "universo":"O universo inclui espaço-tempo, matéria e energia. O modelo cosmológico atual estima sua idade em cerca de 13,8 bilhões de anos.",
+ "revolucao francesa":"A Revolução Francesa começou em 1789 e derrubou a antiga ordem monárquica, difundindo ideias de cidadania, direitos e soberania popular.",
+ "segunda guerra mundial":"A Segunda Guerra Mundial ocorreu de 1939 a 1945 e envolveu países de vários continentes. Terminou com a derrota das potências do Eixo.",
+ "independencia do brasil":"A Independência do Brasil foi proclamada em 7 de setembro de 1822.",
+ "democracia":"Democracia é um sistema político em que o poder tem origem no povo, exercido diretamente ou por representantes eleitos, com instituições e direitos.",
+ "filosofia":"Filosofia é a investigação crítica e racional de questões sobre realidade, conhecimento, ética, política, linguagem e existência.",
+ "socrates":"Sócrates foi um filósofo ateniense conhecido pelo diálogo e pelo questionamento. Não deixou obras escritas; suas ideias são conhecidas principalmente por relatos de discípulos.",
+ "platao":"Platão foi filósofo grego, discípulo de Sócrates e fundador da Academia de Atenas. Escreveu diálogos sobre justiça, conhecimento e política.",
+ "aristoteles":"Aristóteles foi filósofo grego e aluno de Platão. Seus estudos abrangeram lógica, ética, política, biologia, física e metafísica.",
+ "python":"Python é uma linguagem de programação de alto nível, conhecida por sua sintaxe legível e uso em automação, ciência de dados, web e inteligência artificial.",
+ "algoritmo":"Algoritmo é uma sequência finita e ordenada de passos para resolver um problema ou executar uma tarefa.",
+ "inteligencia artificial":"Inteligência artificial é uma área da computação que desenvolve sistemas capazes de realizar tarefas como reconhecer padrões, gerar conteúdo e apoiar decisões.",
+ "internet":"A internet é uma rede global de redes de computadores que trocam dados usando protocolos comuns.",
+ "computador":"Computador é um dispositivo eletrônico que recebe dados, executa instruções e produz resultados.",
+ "capital do brasil":"A capital do Brasil é Brasília.",
+ "capital da franca":"A capital da França é Paris.",
+ "capital de portugal":"A capital de Portugal é Lisboa.",
+ "coracao":"O coração é um órgão muscular que bombeia sangue pelo sistema circulatório.",
+ "economia":"Economia estuda como pessoas e sociedades produzem, distribuem e consomem bens e serviços.",
+ "energia":"Energia é uma grandeza física associada à capacidade de produzir transformações ou realizar trabalho.",
+ "literatura":"Literatura é uma forma de expressão artística feita principalmente por meio da linguagem.",
+ "evolucao":"Evolução biológica é a mudança das características hereditárias de populações ao longo das gerações."
+};
+let knowledge = {...defaultKnowledge, ...JSON.parse(localStorage.getItem("argosKnowledge")||"{}")};
+let history = JSON.parse(localStorage.getItem("argosHistory")||"[]");
+
+function addMessage(who,text,save=true){
+ const div=document.createElement("div"); div.className="msg "+(who==="Você"?"user":"bot");
+ const label=document.createElement("div"); label.className="who"; label.textContent=who.toUpperCase();
+ const body=document.createElement("div"); body.textContent=text;
+ div.append(label,body); chatEl.append(div); chatEl.scrollTop=chatEl.scrollHeight;
+ if(save){history.push({who,text});localStorage.setItem("argosHistory",JSON.stringify(history));}
+}
+function greet(){addMessage("ARGOS","Olá! Sou o ARGOS, criado por Clésio Abadia Souza. Faça uma pergunta ou escolha um assunto acima.");}
+function answer(q){
+ const n=norm(q);
+ if(["quem criou voce","quem te criou","quem fez voce","quem e seu criador","who created you","who made you"].some(x=>n.includes(x))) return "Fui criado por Clésio Abadia Souza.";
+ if(n.includes("seu nome")||n==="quem e voce"||n==="what is your name") return "Meu nome é ARGOS, sua biblioteca inteligente de conhecimentos.";
+ if(n.includes("que horas")) return "Agora são "+new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})+".";
+ if(n.includes("que dia")||n.includes("qual a data")) return "Hoje é "+new Date().toLocaleDateString("pt-BR")+".";
+ if(n.startsWith("ensinar:")){
+   const pair=q.slice(q.indexOf(":")+1).split("=");
+   if(pair.length<2)return "Use: ensinar: assunto = explicação";
+   const key=norm(pair[0]); const val=pair.slice(1).join("=").trim();
+   if(!key||!val)return "Informe o assunto e a explicação.";
+   knowledge[key]=val;localStorage.setItem("argosKnowledge",JSON.stringify(knowledge));
+   return "Aprendi essa informação e guardei neste navegador.";
+ }
+ if(n.includes("o que significa")||n.includes("what does")||n.startsWith("traduza")){
+   const term=n.replace("o que significa","").replace("what does","").replace("traduza","").replace(/mean|significa|\?/g,"").replace(/["']/g,"").trim();
+   const dict={"hello":"olá","good morning":"bom dia","good night":"boa noite","thank you":"obrigado(a)","please":"por favor","friend":"amigo(a)","family":"família","house":"casa","work":"trabalho","water":"água","food":"comida","beautiful":"bonito(a)","knowledge":"conhecimento","freedom":"liberdade","although":"embora","however":"entretanto","through":"através de","enough":"suficiente","improve":"melhorar","understand":"entender","usually":"geralmente","always":"sempre","sometimes":"às vezes","because":"porque","without":"sem","together":"juntos"};
+   if(dict[term])return `"${term}" significa "${dict[term]}".`;
+   return "Ainda não tenho essa palavra no meu pequeno dicionário. Você pode adicioná-la pelo botão “Adicionar conhecimento”.";
+ }
+ if(n.includes("phrasal verb"))return "Phrasal verbs são combinações de verbo e partícula que formam um significado próprio. Exemplos: give up = desistir; look after = cuidar de; find out = descobrir.";
+ if(n.includes("present perfect"))return "Present Perfect: have/has + particípio passado. Exemplo: I have studied English. Pode ligar uma experiência ou ação passada ao presente.";
+ if(n.includes("verb to be"))return "O verbo to be significa ser ou estar. No presente: I am, you are, he is, she is, it is, we are, they are.";
+ if(n.includes("do e does")||n.includes("do or does"))return "DO é usado com I, you, we e they. DOES é usado com he, she e it. Ex.: Do you work? Does she work?";
+ if(n.includes("niveis de ingles")||n.includes("english levels"))return "Os níveis do CEFR são A1 e A2 (básico), B1 e B2 (intermediário), C1 e C2 (proficiente).";
+ if(n.includes("estudar ingles")||n.includes("aprender ingles"))return "Podemos estudar em etapas: A1/A2 para fundamentos; B1/B2 para autonomia; C1/C2 para precisão e fluência. Posso explicar gramática, vocabulário e frases.";
+ if(n.includes("conhecimentos gerais")||n.includes("assuntos voce conhece"))return "Minha biblioteca inclui biologia, física, química, história, geografia, filosofia, matemática, programação, tecnologia, economia e literatura. Ela é limitada e pode ser ampliada ensinando novas respostas.";
+ const math=n.match(/(?:quanto e|calcule|calcular)\s+([0-9+\-*/().,\s%]+)/);
+ if(math){
+   try{let exp=math[1].replace(/,/g,"."); if(!/^[0-9+\-*/().\s%]+$/.test(exp))throw 0; if(exp.includes("%")){const m=exp.match(/^([\d.]+)\s*%\s*de\s*([\d.]+)$/);if(m)return (Number(m[1])/100*Number(m[2])).toString();throw 0;} return "O resultado é "+Function('"use strict";return ('+exp+')')()+ ".";}catch(e){return "Não consegui interpretar essa conta. Tente, por exemplo: quanto é 25 * 4?";}
+ }
+ for(const [k,v] of Object.entries(knowledge)){if(n.includes(k))return v;}
+ if(["hello","hi","good morning"].includes(n))return "Hello! I'm ARGOS. How can I help you?";
+ if(n.includes("how are you"))return "I'm working correctly, thank you! How are you?";
+ if(n.includes("thank you"))return "You're welcome!";
+ return "Ainda não encontrei uma resposta na minha biblioteca. Você pode ensinar esse assunto usando o botão “Adicionar conhecimento”.";
+}
+function send(){
+ const input=$("#question"),q=input.value.trim();if(!q)return;
+ addMessage("Você",q);input.value="";
+ addMessage("ARGOS",answer(q));
+}
+$("#send").addEventListener("click",send);
+$("#question").addEventListener("keydown",e=>{if(e.key==="Enter")send();});
+document.querySelectorAll("[data-prompt]").forEach(b=>b.addEventListener("click",()=>{$("#question").value=b.dataset.prompt;send();}));
+$("#teach").addEventListener("click",()=>$("#teachDialog").showModal());
+$("#cancelTeach").addEventListener("click",()=>$("#teachDialog").close());
+$("#saveTeach").addEventListener("click",()=>{
+ const k=$("#teachKey").value.trim(),v=$("#teachValue").value.trim();if(!k||!v)return;
+ knowledge[norm(k)]=v;localStorage.setItem("argosKnowledge",JSON.stringify(knowledge));
+ $("#teachKey").value="";$("#teachValue").value="";$("#teachDialog").close();
+ addMessage("ARGOS","Novo conhecimento guardado neste navegador. Obrigado por me ensinar!");
+});
+$("#clear").addEventListener("click",()=>{history=[];localStorage.setItem("argosHistory","[]");chatEl.innerHTML="";greet();});
+$("#history").addEventListener("click",()=>{if(!history.length){addMessage("ARGOS","Ainda não há histórico.");return;}addMessage("ARGOS","O histórico desta conversa está guardado neste navegador. Use a rolagem para rever as mensagens anteriores.");});
+if(history.length){history.forEach(m=>addMessage(m.who,m.text,false));}else greet();
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}
+</script>
+</body>
+</html>

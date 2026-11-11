@@ -1,0 +1,16 @@
+ARGOS — primeira versão web instalável
+
+Conteúdo:
+- index.html: interface e lógica local do ARGOS
+- manifest.webmanifest: dados de instalação
+- sw.js: cache básico para uso offline após a primeira visita
+- icon.svg: ícone do aplicativo
+
+IMPORTANTE:
+1. Esta versão não usa API, chave ou assinatura.
+2. As respostas vêm de uma biblioteca programada. Não é um modelo generativo.
+3. Os conhecimentos que você adiciona ficam no armazenamento local do navegador deste aparelho.
+4. Para instalar como PWA, publique estes arquivos em um site HTTPS (por exemplo, GitHub Pages). Abrir o HTML como arquivo local não habilita a instalação PWA nem o service worker.
+5. O suporte a ícones SVG no manifesto pode variar entre navegadores. Se necessário, adicione ícones PNG 192x192 e 512x512 ao manifesto.
+
+Depois de publicar em HTTPS, abra o endereço no Chrome do Android, toque no menu ⋮ e procure “Instalar app” ou “Adicionar à tela inicial”.
